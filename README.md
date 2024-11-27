@@ -14,7 +14,7 @@ No se trata de un paquete de complementos como [ShaguUI](http://shagu.org/ShaguU
 <img src="https://raw.githubusercontent.com/shagu/ShaguAddons/master/_img/pfUI/maraudon.jpg" width="48.5%">
 
 ## Instalación
-1. Descargar **[Última versión](https://github.com/shagu/pfUI/archive/master.zip)**
+1. Descargar **[Última versión](https://github.com/PotoBW2/pfui_complete_spanish/releases/download/pfUI_complete_spanish_1.00/pfUI.rar)**
 2. Descomprima el archivo Rar
 3. Copia "pfUI" dentro de Directorio-WoW\Interface\AddOns
 4. Reiniciar Wow
