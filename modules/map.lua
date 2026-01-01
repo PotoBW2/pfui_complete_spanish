@@ -63,7 +63,17 @@ pfUI:RegisterModule("map", "vanilla:tbc", function ()
         end
 
         if IsControlKeyDown() then
-          scale = clamp(WorldMapFrame:GetScale() + arg1/10, 0.1, 2.0)
+          local oldscale = WorldMapFrame:GetScale()
+          local point, rel, relpoint, offx, offy = WorldMapFrame:GetPoint()
+          scale = clamp(oldscale + arg1/10, 0.1, 2.0)
+
+          -- recalculate world frame position based on old and new scale
+          if point == "TOPLEFT" and relpoint == "TOPLEFT" then
+            offx = offx*oldscale/scale
+            offy = offy*oldscale/scale
+            WorldMapFrame:SetPoint(point, rel, relpoint, offx, offy)
+          end
+
           WorldMapFrame:SetScale(scale)
           UpdateTooltipScale()
         end
@@ -126,10 +136,12 @@ pfUI:RegisterModule("map", "vanilla:tbc", function ()
         local scale  = WorldMapButton:GetEffectiveScale()
         local x, y   = GetCursorPosition()
 
-        mx = (( x / scale ) - ( mx - width / 2)) / width * 100
-        my = (( my + height / 2 ) - ( y / scale )) / height * 100
+        if mx and my then
+          mx = (( x / scale ) - ( mx - width / 2)) / width * 100
+          my = (( my + height / 2 ) - ( y / scale )) / height * 100
+        end
 
-        if MouseIsOver(WorldMapButton) then
+        if mx and my and MouseIsOver(WorldMapButton) then
           WorldMapButton.coords.text:SetText(string.format('%.1f / %.1f', mx, my))
         else
           WorldMapButton.coords.text:SetText("")

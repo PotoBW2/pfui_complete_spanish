@@ -6,7 +6,32 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
     Spell_Nature_MoonKey = {frame="picklock"},
   }
   local scanner = libtipscan:GetScanner("openable")
-  local openable = {}
+
+  -- function to detect openable items in inventory
+  local openable = { bag = nil, slot = nil, icon = nil }
+  local function GetNextOpenable()
+    if openable.icon and openable.icon == GetContainerItemInfo(openable.bag, openable.slot) then
+      return openable.bag, openable.slot
+    end
+
+    for bag=-2, 11 do
+      local bagsize = GetContainerNumSlots(bag)
+      if bag == -2 and pfUI.bag.showKeyring == true then bagsize = GetKeyRingSize() end
+      for slot=1, bagsize do
+        if GetContainerItemInfo(bag, slot) then
+          scanner:SetBagItem(bag, slot)
+
+          if scanner:Find(_G.ITEM_OPENABLE, true) then
+            openable.bag = bag
+            openable.slot = slot
+            openable.icon = GetContainerItemInfo(bag, slot)
+            return openable.bag, openable.slot
+          end
+        end
+      end
+    end
+  end
+
   -- prevent from being placed offscreen
   _G.StackSplitFrame:SetClampedToScreen(true)
 
@@ -283,6 +308,7 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
     end
 
     local topspace = pfUI.bag.right.close:GetHeight() + default_border * 2
+    local bottomspace = pfUI.panel and pfUI.panel.right:IsShown() and pfUI.panel.right:GetHeight() + default_border or 16 + default_border
 
     for id, bag in pairs(iterate) do
       if not pfUI.bags[bag] then
@@ -314,8 +340,7 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
     end
 
     if x > 0 then y = y + 1 end
-    if pfUI.panel and pfUI.panel.right:IsShown() then topspace = topspace + pfUI.panel.right:GetHeight() end
-    frame:SetHeight( default_border*2 + y*(frame.button_size+default_border*3) + topspace)
+    frame:SetHeight( default_border*2 + y*(frame.button_size+default_border*3) + topspace + bottomspace)
 
     local chat = pfUI.chat and ( object == "bank" and pfUI.chat.left or pfUI.chat.right) or nil
 
@@ -343,30 +368,6 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
     if bag == -2 and pfUI.bag.showKeyring == true then bagsize = GetKeyRingSize() end
     for slot=1, bagsize do
       pfUI.bag:UpdateSlot(bag, slot)
-    end
-  end
-
-  function pfUI.bag:Openable(bag, slot, hasItem)
-    local prev_bag, prev_slot = openable.bag, openable.slot
-    if bag == prev_bag and slot == prev_slot then
-      openable.bag = nil
-      openable.slot = nil
-      openable.name = nil
-    end
-    if hasItem then
-      scanner:SetBagItem(bag, slot)
-      if scanner:Find(_G.ITEM_OPENABLE, true) then
-        openable.bag = bag
-        openable.slot = slot
-        openable.name = scanner:Line(1)
-      end
-    end
-    if pfUI.bag.right and pfUI.bag.right.open then
-      if openable.bag and openable.slot then
-        pfUI.bag.right.open.texture:SetTexture(pfUI.media["img:full"])
-      else
-        pfUI.bag.right.open.texture:SetTexture(pfUI.media["img:empty"])
-      end
     end
   end
 
@@ -399,7 +400,9 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
         bagslot.cd.pfCooldownType = "ALL"
       end
 
-      CreateBackdrop(pfUI.bags[bag].slots[slot].frame, default_border)
+      if not pfUI.bags[bag].slots[slot].frame.backdrop then
+        CreateBackdrop(pfUI.bags[bag].slots[slot].frame, default_border)
+      end
 
       local highlight = pfUI.bags[bag].slots[slot].frame:GetHighlightTexture()
       highlight:SetTexture(.5, .5, .5, .5)
@@ -447,30 +450,20 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
     SetItemButtonCount(pfUI.bags[bag].slots[slot].frame, count)
     SetItemButtonDesaturated(pfUI.bags[bag].slots[slot].frame, locked, 0.5, 0.5, 0.5)
 
-    local hasItem
-    if texture then
-      hasItem = 1
-    else
-      hasItem = nil
-    end
-
+    local hasItem = texture and 1 or nil
     pfUI.bags[bag].slots[slot].frame.hasItem = hasItem
     pfUI.bags[bag].slots[slot].frame.qtext:SetText("")
-
-    pfUI.bag:Openable(bag, slot, hasItem)
 
     ContainerFrame_UpdateCooldown(bag, pfUI.bags[bag].slots[slot].frame)
 
     -- detect backdrop border color
-    if quality and quality > tonumber(C.appearance.bags.borderlimit) then
+    if texture and itype == "Quest" then
+      pfUI.bags[bag].slots[slot].frame.backdrop:SetBackdropBorderColor(1, .8, .2, .8)
+      pfUI.bags[bag].slots[slot].frame.qtext:SetText("?")
+    elseif texture and quality and quality > tonumber(C.appearance.bags.borderlimit) then
       pfUI.bags[bag].slots[slot].frame.backdrop:SetBackdropBorderColor(GetItemQualityColor(quality))
-    elseif texture then
-      if itype == "Quest" then
-        pfUI.bags[bag].slots[slot].frame.backdrop:SetBackdropBorderColor(1, .8, .2, .8)
-        pfUI.bags[bag].slots[slot].frame.qtext:SetText("?")
-      else
-        pfUI.bags[bag].slots[slot].frame.backdrop:SetBackdropBorderColor(.5,.5,.5,1)
-      end
+    elseif texture and quality then
+      pfUI.bags[bag].slots[slot].frame.backdrop:SetBackdropBorderColor(.5,.5,.5,1)
     else
       local bagtype = GetBagFamily(bag)
 
@@ -504,11 +497,6 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
       else
         pfUI.bags[bag].slots[slot].frame.scoreText:SetText("")
       end
-    end
-
-    -- update red color on unusable items
-    if pfUI.unusable then
-      pfUI.unusable:UpdateSlot(bag, slot)
     end
 
     pfUI.bags[bag].slots[slot].frame:Show()
@@ -687,8 +675,11 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
       for slot=1, bagsize do
         if pfUI.bags[bag] and pfUI.bags[bag].slots[slot] and pfUI.bags[bag].slots[slot].frame:IsShown() then
           local _, _, locked, _ = GetContainerItemInfo(bag, slot)
-          SetItemButtonDesaturated(pfUI.bags[bag].slots[slot].frame, locked, 0.5, 0.5, 0.5)
-          if pfUI.unusable then pfUI.unusable:UpdateSlot(bag, slot) end
+          if pfUI.bags[bag].slots[slot].locked ~= locked then
+            SetItemButtonDesaturated(pfUI.bags[bag].slots[slot].frame, locked, 0.5, 0.5, 0.5)
+            if pfUI.unusable then pfUI.unusable:UpdateSlot(bag, slot) end
+            pfUI.bags[bag].slots[slot].locked = locked
+          end
         end
       end
     end
@@ -799,9 +790,10 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
           frame.open.backdrop:SetBackdropBorderColor(1,1,.25,1)
           frame.open.texture:SetVertexColor(1,1,.25,1)
           GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-          if openable.bag and openable.slot then
-            -- GameTooltip:SetText(openable.name) -- title only
-            GameTooltip:SetBagItem(openable.bag, openable.slot)
+
+          local bag, slot = GetNextOpenable()
+          if bag and slot then
+            GameTooltip:SetBagItem(bag, slot)
           else
             GameTooltip:SetText(_G.EMPTY)
           end
@@ -817,22 +809,23 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
         end)
 
         frame.open:SetScript("OnClick", function()
-          if openable.bag and openable.slot then
+          -- open next container item
+          local bag, slot = GetNextOpenable()
+          if bag and slot then
             ClearCursor()
             if MerchantFrame:IsShown() then
               HideUIPanel(MerchantFrame)
             end
-            UseContainerItem(openable.bag, openable.slot)
+            UseContainerItem(bag, slot)
           end
 
-          -- update tooltip
-          if openable.bag and openable.slot then
-            -- GameTooltip:SetText(openable.name) -- title only
-            GameTooltip:SetBagItem(openable.bag, openable.slot)
+          -- reload tootltip
+          local bag, slot = GetNextOpenable()
+          if bag and slot then
+            GameTooltip:SetBagItem(bag, slot)
           else
             GameTooltip:SetText(_G.EMPTY)
           end
-          GameTooltip:Show()
         end)
       end
 
@@ -966,9 +959,28 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
         end)
       end
 
+      -- gold string
+      if not frame.gold and (C.appearance.bags.movable == "1" or not pfUI.panel) then
+        frame.gold = CreateFrame("Frame", "pfBagGoldString", frame)
+        frame.gold:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 1)
+        frame.gold:SetWidth(200)
+        frame.gold:SetHeight(18)
+        frame.gold:RegisterEvent("PLAYER_ENTERING_WORLD")
+        frame.gold:RegisterEvent("PLAYER_MONEY")
+        frame.gold:SetScript("OnEvent", function()
+          frame.gold.text:SetText(CreateGoldString(GetMoney()))
+        end)
+
+        frame.gold.text = frame.gold.text or frame.gold:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        frame.gold.text:SetFontObject(GameFontWhite)
+        frame.gold.text:SetJustifyH("RIGHT")
+        frame.gold.text:SetAllPoints()
+      end
+
       -- bag search
       if not frame.search then
         frame.search = CreateFrame("Frame", "pfBagSearch", frame)
+        frame.search.db = {}
         frame.search:SetHeight(12)
         frame.search:SetPoint("TOPLEFT", frame, "TOPLEFT", default_border, -default_border)
         frame.search:SetPoint("TOPRIGHT", frame.keys, "TOPLEFT", -default_border*3, -default_border)
@@ -1013,6 +1025,25 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
               if itemCount then
                 local itemLink = GetContainerItemLink(bag, slot)
                 local itemstring = string.sub(itemLink, string.find(itemLink, "%[")+1, string.find(itemLink, "%]")-1)
+
+                if C.appearance.bags.fulltext == "1" then
+                  if not frame.search.db[itemLink] then
+                    scanner:SetBagItem(bag, slot)
+                    local text = scanner:Text()
+
+                    local str = ""
+                    for k, v in pairs(text) do
+                      str = str .. (v[1] or "") .. (v[2] or "")
+                    end
+
+                    frame.search.db[itemLink] = strlower(str)
+                  end
+
+                  if strfind(frame.search.db[itemLink], strlower(this:GetText()), 1, true) then
+                    pfUI.bags[bag].slots[slot].frame:SetAlpha(1)
+                  end
+                end
+
                 if strfind(strlower(itemstring), strlower(this:GetText()), 1, true) then
                   pfUI.bags[bag].slots[slot].frame:SetAlpha(1)
                 end
@@ -1090,7 +1121,6 @@ pfUI:RegisterModule("bags", "vanilla:tbc", function ()
           end
         end)
       end
-
     end
   end
 end)

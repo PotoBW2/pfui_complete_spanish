@@ -536,7 +536,7 @@ pfUI:RegisterModule("thirdparty-vanilla", "vanilla", function()
         local colorstr = rgbhex(RAID_CLASS_COLORS[class].r, RAID_CLASS_COLORS[class].g, RAID_CLASS_COLORS[class].b, RAID_CLASS_COLORS[class].a)
         _G.WIM_ClassColors[wimclass] = gsub(colorstr, "^|cff", "")
       end
-    end, true)
+    end)
 
     -- convo menu
     CreateBackdrop(WIM_Icon_ToolTip, 0, nil, tonumber(C.tooltip.alpha))
@@ -560,7 +560,7 @@ pfUI:RegisterModule("thirdparty-vanilla", "vanilla", function()
           btn:SetText(btn_txt)
         end
       end
-    end, true)
+    end)
 
     if WIM_HistoryFrame then -- history frame
       CreateBackdrop(WIM_HistoryFrame, nil, nil, .8)
@@ -856,7 +856,7 @@ pfUI:RegisterModule("thirdparty-vanilla", "vanilla", function()
 
     -- make theorycraft aware of pfUI bars
     for i=1,10 do
-      for j=1,10 do
+      for j=1,12 do
         TheoryCraft_SetUpButton(pfUI.bars[i][j]:GetName(), "Normal")
       end
     end
@@ -1212,7 +1212,7 @@ pfUI:RegisterModule("thirdparty-vanilla", "vanilla", function()
     -- because it only attempts to add rarity borders which pfUI already does.
 
     -- make sure strata won't get touched again
-    PaperDollHook = function() return end
+    _G.PaperDollHook = function() return end
 
     -- restore original frame strata
     PaperDollFrame:SetFrameStrata("DIALOG")
@@ -1224,19 +1224,36 @@ pfUI:RegisterModule("thirdparty-vanilla", "vanilla", function()
   -- UnitXP SP3 compatibility
   -- https://github.com/allfoxwy/UnitXP_SP3
   HookAddonOrVariable("UnitXP_SP3_Addon", function()
-    -- skin main menu button
-    SkinButton(GameMenuButtonXPSP3)
     -- skin UnitXP SP3 window and elements
     StripTextures(xpsp3Frame)
     CreateBackdrop(xpsp3Frame)
     CreateBackdropShadow(xpsp3Frame)
+
     StripTextures(xpsp3tooltip)
     CreateBackdrop(xpsp3tooltip)
     CreateBackdropShadow(xpsp3tooltip)
+
+    SkinCheckbox(xpsp3_checkButton_minimapButton)
     SkinCheckbox(xpsp3_checkButton_modernNameplate)
+    SkinCheckbox(xpsp3_checkButton_prioritizeTargetNameplate)
+    SkinCheckbox(xpsp3_checkButton_prioritizeMarkedNameplate)
+    SkinCheckbox(xpsp3_checkButton_nameplateCombatFilter)
+    SkinCheckbox(xpsp3_checkButton_showInCombatNameplatesNearPlayer)
     SkinCheckbox(xpsp3_checkButton_notify_flashTaskbarIcon)
     SkinCheckbox(xpsp3_checkButton_notify_playSystemDefaultSound)
-    SkinButton(xpsp3_button_close)
+    SkinCheckbox(xpsp3_checkButton_cameraPinHeight)
+
+    SkinButton(xpsp3_button_cameraHeight_raise)
+    SkinButton(xpsp3_button_cameraHeight_lower)
+    SkinButton(xpsp3_button_cameraPitch_up)
+    SkinButton(xpsp3_button_cameraPitch_down)
+    SkinButton(xpsp3_button_cameraHorizontalDisplacement_leftPlayer)
+    SkinButton(xpsp3_button_cameraHorizontalDisplacement_rightPlayer)
+    SkinButton(xpsp3_buttonCancel_resetCamera)
+    SkinButton(xpsp3_buttonCancel_close)
+
+    StripTextures(xpsp3_editBox_FPScap, "BACKGROUND")
+    CreateBackdrop(xpsp3_editBox_FPScap)
   end)
-    
+
 end)

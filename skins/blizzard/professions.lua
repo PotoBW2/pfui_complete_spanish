@@ -120,6 +120,7 @@ pfUI:RegisterSkin("Profession", "vanilla:tbc", function ()
           inputbox:DisableDrawLayer("BACKGROUND")
           CreateBackdrop(inputbox)
           SetAllPointsOffset(inputbox.backdrop, inputbox, .2)
+          inputbox:SetJustifyH("CENTER")
           inputbox:SetWidth(36)
         end
 
@@ -215,7 +216,7 @@ pfUI:RegisterSkin("Profession", "vanilla:tbc", function ()
               end
             end
           end
-        end, true)
+        end)
       end
 
       -- Compatibility
