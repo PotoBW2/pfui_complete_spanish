@@ -1623,6 +1623,7 @@ pfUI_locale["esES"]["debuffs"] = {
   ['Conflagración']={[0]=10.0,},
   ['Congelación']={[0]=15.0,},
   ['Cono de frío']={[0]=8.0,},
+  ['Cono de Frío']={[0]=8.0,},
   ['Consecución veraz']={[0]=20.0,},
   ['Consumir']={[0]=15.0,},
   ['Contagio de putrefacción']={[0]=240.0,},
@@ -2396,7 +2397,7 @@ pfUI_locale["esES"]["debuffs"] = {
 }
 
 -- custom entries not detected by DBC extractor
-pfUI_locale["esES"]["debuffs"]['Cono de frío']={[0]=8.0,} -- Cone of Cold
+-- pfUI_locale["esES"]["debuffs"]['Cono de frío']={[0]=8.0,} -- Cone of Cold
 
 pfUI_locale["esES"]["totems"] = {
   ["Tótem de limpieza de enfermedades"] = "spell_nature_diseasecleansingtotem",
@@ -2605,6 +2606,7 @@ pfUI_locale["esES"]["icons"] = {
   ["Tromba de conmoción"] = "Spell_Arcane_StarFire",
   ["Disparo de conmoción"] = "Spell_Frost_Stun",
   ["Cono de frío"] = "Spell_Frost_Glacier",
+  ["Cono de Frío"] = "Spell_Frost_Glacier",
   ["Conflagrar"] = "Spell_Fire_Fireball",
   ["Conflagración"] = "Spell_Fire_Incinerate",
   ["Crear comida"] = "INV_Misc_Food_10",
