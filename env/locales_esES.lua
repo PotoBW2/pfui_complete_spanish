@@ -1464,6 +1464,7 @@ pfUI_locale["esES"]["spells"] = {
   ['Éxtasis melódico']={t=1000,icon='Temp'},
 }
 
+
 pfUI_locale["esES"]["debuffs"] = {
   ['Abrazo de la viuda']={[0]=30.0,},
   ['Abrazo vampírico']={[0]=60.0,},
@@ -1621,6 +1622,7 @@ pfUI_locale["esES"]["debuffs"] = {
   ['Confianza de Golemagg']={[0]=2.0,},
   ['Conflagración']={[0]=10.0,},
   ['Congelación']={[0]=15.0,},
+  ['Cono de frío']={[0]=8.0,},
   ['Consecución veraz']={[0]=20.0,},
   ['Consumir']={[0]=15.0,},
   ['Contagio de putrefacción']={[0]=240.0,},
