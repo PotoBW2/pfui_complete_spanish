@@ -1889,7 +1889,7 @@ pfUI_locale["esES"]["debuffs"] = {
   ['Gusano babosa']={[0]=1800.0,},
   ['Gusanos de cadáver']={[0]=600.0,},
   ['Géiser']={[0]=5.0,},
-  ['Gélido']={[0]=1.5,},
+  ['Enfriado']={[0]=1.5,},
   ['Habilidad de los Renegados']={[0]=300.0,},
   ['Hacer picadillo']={[0]=6.0,},
   ['Harpón envenenado']={[0]=60.0,},
